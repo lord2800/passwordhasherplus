@@ -28,3 +28,36 @@ select {
   padding-bottom: 0px;
   margin-bottom: 3px;
 }
+#tag {
+  width:134px;
+}
+#masterpw,
+#hashword {
+  width:170px;
+}
+#hasher > p.browser-style {
+  clear:left;
+}
+details {
+  margin-top:6px;
+}
+details > summary {
+  font-weight:bold;
+}
+button.unmask {
+  width:24px;
+  text-align:center;
+}
+#hash-hint,
+#master-hint {
+  position:absolute;
+  /* XXX! */
+  top:3px;
+  right:33px;
+  display:inline-block;
+  color:#666;
+  background-color:#ccc;
+  text-align:center;
+  padding:1px 3px;
+  font-family:monospace;
+}

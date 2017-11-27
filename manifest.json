@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Password Hasher Plus - Password Generator",
-	"version": "2.4.0",
+	"version": "2.4.1a0",
 	"description": "Password Hasher Plus automatically enhances password strength (length and difficulty) to protect your accounts.",
 	"icons": { "64": "images/icon.png", "128": "images/icon.png" },
         "applications": {
@@ -19,7 +19,7 @@
 		"page": "options.html"
 	},
 
-	"browser_action": {
+	"page_action": {
 		"browser_style": true,
 		"default_icon": "images/passhash.png",
 		"default_title": "Password Hasher",
@@ -29,16 +29,22 @@
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["lib/jquery-3.1.1.min.js", "lib/jquery.qtip.min.js", "lib/sha1.js", "lib/tld.min.js", "lib/passhashcommon.js", "common.js", "content-script.js"],
+			"js": ["lib/jquery-3.1.1.min.js", "lib/jquery.qtip.min.js", "content-script.js"],
 			"css": ["lib/jquery.qtip.min.css", "styles.css"],
 			"run_at": "document_end",
 			"all_frames": true
 		}
 	],
 
+        "commands": {
+            "_execute_page_action": {
+                "suggested_key": { "default": "Ctrl+Shift+3" }
+            }
+        },
+
 	"permissions": [
-		"activeTab", "storage", "http://*/*", "https://*/*", "clipboardWrite"
+		"activeTab", "tabs", "menus", "storage", "http://*/*", "https://*/*", "clipboardWrite"
 	],
 
-	"content_security_policy": "script-src 'self' 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=' 'sha256-xaA6jdp8Hrg9UJVct3bu0uieCYCytFZrv/nqG7Kouys=' 'sha256-leDZ7yEeVa7Q7xy2S/45h+BUogqAQoBrDTpBkTFNkMk=' 'sha256-thpfFgw1VMy7GcMXqpWVABUalukoNCn0g0kQTelDqEA=' 'sha256-qV4nbslMTjoIZTEbYOGBMkHpkaxNJDVvrKymVysj30Y=' 'sha256-MB52pf5SCKlStcm4MEYmNRveQ9ufaTgAlPJhg7kix1Q=' ; object-src 'self'"
+	"content_security_policy": "script-src 'self' 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=' 'sha256-xaA6jdp8Hrg9UJVct3bu0uieCYCytFZrv/nqG7Kouys=' 'sha256-leDZ7yEeVa7Q7xy2S/45h+BUogqAQoBrDTpBkTFNkMk=' 'sha256-thpfFgw1VMy7GcMXqpWVABUalukoNCn0g0kQTelDqEA=' 'sha256-+uC+2tyReBuCeox8zV0E1QLvYAH+UkWvyqz5Rr+sdNk=' 'sha256-MB52pf5SCKlStcm4MEYmNRveQ9ufaTgAlPJhg7kix1Q=' ; object-src 'self'"
 }

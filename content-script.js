@@ -32,7 +32,8 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-var config;
+var last_focused_elem;
+var debug = true;
 
 var port = chrome.runtime.connect({name: "passhash"});
 
@@ -40,280 +41,158 @@ var id = 0;
 
 var fields = new Array ();
 
+function loadOptions(resultHandler) {
+    browser.storage.local.get('sync').then(results => {
+        var area = results.sync ? browser.storage.sync : browser.storage.local;
+        area.get('options').then(optres => {
+            resultHandler(optres.options);
+        });
+    });
+}
+
 function bind (f) {
-	var field = f;
-	if ("" == field.id) {
-		field.id = "passhash_" + id++;
-	}
+    var field = f;
+    if ("" == field.id) {
+        field.id = "passhash_" + id++;
+    }
 
-	if (-1 != $.inArray(field, fields) || $(field).hasClass ("nopasshash")) {
-		return false;
-	}
-	fields[fields.length] = field;
+    if (-1 != $.inArray(field, fields) || $(field).hasClass ("nopasshash")) {
+        return false;
+    }
+    fields[fields.length] = field;
 
-	var hasFocus = false;
-	var backgroundStyle = field.style.backgroundColor;
-	var input = field.value;
-	var hash = "";
-	var hashing = false;
-	var masking = true;
-	var editing = false;
+    var masking = true;
 
-	var content = '<span class="passhashbutton hashbutton"/><span class="passhashbutton maskbutton"/>';
+    var content = '<span class="passhashbutton maskbutton"/>';
 
-	var hashbutton;
-	var maskbutton;
+    var maskbutton;
 
-	function rehash () {
-		hash = generateHash (config, input);
-	}
+    /* toggle masking... maybe remove here? */
+    function setFieldType () {
+        if (masking) {
+            field.type = "password";
+            if (null != maskbutton) {
+                maskbutton.innerHTML = "a";
+                maskbutton.title = "Show password (Ctrl + *)";
+            }
+        } else {
+            field.type = "text";
+            if (null != maskbutton) {
+                maskbutton.innerHTML = "*";
+                maskbutton.title = "Mask password (Ctrl + *)";
+            }
+        }
+    }
 
-	function paintHash () {
-		if ("" != input) {
-			field.value = hash;
-		} else {
-			field.value = "";
-		}
-		field.style.backgroundColor = "#D1D1D1";
-		editing = false;
-	}
+    function toggleMasking () {
+        masking = !masking;
+        setFieldType ();
+    }
 
-	function paintValue () {
-		field.value = input;
-		field.style.backgroundColor = backgroundStyle;
-		editing = true;
-	}
+    function requestHash() {
+        console.log("[passhashplus content-script] remembering element");
+        last_focused_elem = field;
+    }
 
-	function paintHashButton () {
-		if (hashing) {
-			hashbutton.innerHTML = "\"";
-			hashbutton.title = "Literal password (Ctrl + #)"
-		} else {
-			hashbutton.innerHTML = "#";
-			hashbutton.title = "Hash password (Ctrl + #)"
-		}
-	}
+    $(field).qtip ({
+        content: {
+            text: content
+        },
+        position: { my: 'top right', at: 'bottom right' },
+        show: {
+            event: 'focus mouseenter',
+            solo: true
+        },
+        hide: {
+            fixed: true,
+            event: 'unfocus'
+        },
+        style: {
+            classes: 'ui-tooltip-light ui-tooltip-rounded'
+        },
+        events: {
+            visible: function (event, api) {
+                if (null != maskbutton) {
+                    return;
+                }
 
-	function setFieldType () {
-		if (masking) {
-			field.type = "password";
-			if (null != maskbutton) {
-				maskbutton.innerHTML = "a";
-				maskbutton.title = "Show password (Ctrl + *)";
-			}
-		} else {
-			field.type = "text";
-			if (null != maskbutton) {
-				maskbutton.innerHTML = "*";
-				maskbutton.title = "Mask password (Ctrl + *)";
-			}
-		}
-	}
+                maskbutton = $(".maskbutton", api.elements.content).get (0);
 
-	function update () {
-		input = field.value;
-		rehash ();
-	}
+                maskbutton.addEventListener ("click", toggleMasking);
+                setFieldType ();
+            }
+        }
+    });
 
-	function toggleMasking () {
-		masking = !masking;
-		setFieldType ();
-	}
+    $(field).on('focus', function(e) {
+        last_focused_elem = field;
+    });
 
-	function getSelection () {
-		var txt = null;
-		if (window.getSelection) {
-			txt = window.getSelection ();
-		}
-		else if (document.getSelection) {
-			txt = document.getSelection ();
-		} else if (document.selection) {
-			txt = document.selection.createRange ().text;
-		}
-		if ("" == txt) {
-			return null;
-		}
-		return txt;
-	}
+    $(field).keydown (function (e) {
+        loadOptions(function(options) {
+            var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
+            if (shortcut == options.hashKey)
+                requestHash ();
+            if (shortcut == options.maskKey)
+                toggleMasking ();
+            if (e.which == 13) {
+                $(field).qtip ("hide");
+            }
+        });
+    });
 
-	function copy () {
-		update ();
-		paintHash ();
-		field.select ();
-	}
-
-	function focusEvent () {
-		if (hashing) {
-			editing = true;
-			paintValue ();
-		}
-		hasFocus = true;
-	}
-
-	function blurEvent () {
-		if (editing) {
-			update ();
-		}
-		if (hashing) {
-			paintHash ();
-		}
-		hasFocus = false;
-	}
-
-	function rehashEvent () {
-		rehash ();
-		if (hashing) {
-			paintHash ();
-		}
-	}
-
-	function addFieldEventListeners () {
-		field.addEventListener ("focus", focusEvent);
-		field.addEventListener ("blur", blurEvent);
-		field.addEventListener ("change", update);
-		field.addEventListener ("rehash", rehashEvent);
-	}
-
-	function removeFieldEventListeners () {
-		field.removeEventListener ("focus", focusEvent);
-		field.removeEventListener ("blur", blurEvent);
-		field.removeEventListener ("change", update);
-		field.removeEventListener ("rehash", rehashEvent);
-	}
-
-	field.addEventListener ("sethash", function () {
-		toggleHashing (false);
-	});
-
-	function toggleHashing (save) {
-		hashing = !hashing;
-		if (hashing) {
-			update ();
-		}
-		if (null != hashbutton) {
-			paintHashButton ();
-		}
-		if (hashing) {
-			config.fields.add (field.id);
-			if (!hasFocus) {
-				rehash ();
-				paintHash ();
-			}
-			addFieldEventListeners ();
-		} else {
-			removeFieldEventListeners ();
-			config.fields.remove (field.id);
-			if (!hasFocus) {
-				paintValue ();
-			}
-		}
-		if (true == save) {
-			port.postMessage ({url: location.href, save: config});
-		}
-	}
-
-	$(field).qtip ({
-		content: {
-			text: content
-		},
-		position: { my: 'top right', at: 'bottom right' },
-		show: {
-			event: 'focus mouseenter',
-			solo: true
-		},
-		hide: {
-			fixed: true,
-			event: 'unfocus'
-		},
-		style: {
-			classes: 'ui-tooltip-light ui-tooltip-rounded'
-		},
-		events: {
-			visible: function (event, api) {
-				if (null != hashbutton) {
-					return;
-				}
-
-				hashbutton = $(".hashbutton", api.elements.content).get (0);
-				maskbutton = $(".maskbutton", api.elements.content).get (0);
-
-				hashbutton.addEventListener ("click", function () {
-					toggleHashing (true);
-				});
-
-				maskbutton.addEventListener ("click", toggleMasking);
-				paintHashButton ();
-				setFieldType ();
-			}
-		}
-	});
-
-	$(field).keydown (function (e) {
-		var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
-		if (shortcut == config.options.hashKey)
-			toggleHashing (true);
-		if (shortcut == config.options.maskKey)
-			toggleMasking ();
-		if (shortcut == "Ctrl+67" && null == getSelection () && !masking) // ctrl + c
-			copy ();
-		if (e.which == 13) {
-			update ();
-			if (hashing) {
-				paintHash ();
-			}
-			$(field).qtip ("hide");
-		}
-	});
-
-	setFieldType ();
-	return true;
+    setFieldType ();
+    return true;
 }
 
 $("input[type=password]").each (function (index) {
 	bind (this);
 });
 
-var setHashEvt = document.createEvent ("HTMLEvents");
-setHashEvt.initEvent ('sethash', true, true);
-
-var rehashEvt = document.createEvent ("HTMLEvents");
-rehashEvt.initEvent ('rehash', true, true);
-
 function onMutation (mutations, observer) {
-	mutations.forEach (function(mutation) {
-		for (var i = 0; i < mutation.addedNodes.length; ++i) {
-			var item = mutation.addedNodes[i];
-			if (item.nodeName == 'INPUT' && item.type == 'password') {
-				bind(item);
-			} else {
-				$("input[type=password]", item).each(function (i) {
-					bind(this);
-				})
-			}
-		}
-	});
+    mutations.forEach (function(mutation) {
+        for (var i = 0; i < mutation.addedNodes.length; ++i) {
+            var item = mutation.addedNodes[i];
+            if (item.nodeName == 'INPUT' && item.type == 'password') {
+                bind(item);
+            } else {
+                $("input[type=password]", item).each(function (i) {
+                    bind(this);
+                })
+            }
+        }
+    });
 }
 
 
 port.onMessage.addListener (function (msg) {
-	if (null != msg.update) {
-		if (debug) console.log ("Config updated " + JSON.stringify (msg.update));
-		config = msg.update;
-		config.fields = toSet (config.fields);
-		for (var i = 0; i < fields.length; ++i) {
-			fields[i].dispatchEvent (rehashEvt);
-		}
-	}
-	if (null != msg.init) {
-		for (var i = 0; i < fields.length; ++i) {
-			if (fields[i].id in config.fields) {
-				// Hashing for this field was persisted but it is not enabled yet
-				fields[i].dispatchEvent (setHashEvt);
-			}
-		}
-		var observer = new MutationObserver (onMutation);
-		observer.observe (document, { childList: true, subtree: true });
-	}
+    if (null != msg.hash) {
+        var elem = last_focused_elem;
+        if (debug) console.log("got hash " + msg.hash + ", last focused elem: " + elem);
+        if (elem != null) {
+            elem.blur();
+            elem.value = msg.hash;
+            elem.focus();
+            // flash element when we change value to give visual feedback
+            var origbg = $(elem).css("background-color");
+            $(elem).css({'background-color': "#ffffd5"}).delay(250).queue((next) => {
+                $(elem).css({
+                    'background-color': origbg,
+                    'transition': 'background-color 250ms'
+                });
+                next();
+            });
+        }
+    }
+    if (null != msg.init) {
+        var observer = new MutationObserver (onMutation);
+        observer.observe (document, { childList: true, subtree: true });
+        document.addEventListener("mousedown", function(evt) {
+            console.log("element "+ evt.target + ", id: " + evt.target.id +" clicked");
+            // remember clicked element
+            last_focused_elem = evt.target;
+        });
+    }
 });
 
 port.postMessage ({init: true, url:location.href});

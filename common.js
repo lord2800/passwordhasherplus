@@ -91,45 +91,50 @@ function generateGuid () {
 	}).toUpperCase ();
 }
 
+function generateHashL (config, input, length) {
+    console.log("[common.js:generateHashL] length = " + length);
+    var tag = config.tag;
+
+    if (false == config.options.compatibilityMode && null != config.policy.seed) {
+        tag = PassHashCommon.generateHashWord (
+                config.policy.seed,
+                tag,
+                24,
+                true, // require digits
+                true, // require punctuation
+                true, // require mixed case
+                false, // no special characters
+                false // only digits
+                );
+    }
+
+    if (config.policy.strength == -1) {
+        return PassHashCommon.generateHashWord (
+                tag,
+                input,
+                length,
+                config.policy.custom.d, // require digits
+                config.policy.custom.p, // require punctuation
+                config.policy.custom.m, // require mixed case
+                config.policy.custom.r, // no special characters
+                false // only digits
+                );
+    } else {
+        return PassHashCommon.generateHashWord (
+                tag,
+                input,
+                length,
+                true, // require digits
+                config.policy.strength > 1, // require punctuation
+                true, // require mixed case
+                config.policy.strength < 2, // no special characters
+                config.policy.strength == 0 // only digits
+                );
+    }
+}
+
 function generateHash (config, input) {
-	var tag = config.tag;
-
-	if (false == config.options.compatibilityMode && null != config.policy.seed) {
-		tag = PassHashCommon.generateHashWord (
-			config.policy.seed,
-			tag,
-			24,
-			true, // require digits
-			true, // require punctuation
-			true, // require mixed case
-			false, // no special characters
-			false // only digits
-		);
-	}
-
-  if (config.policy.strength == -1) {
-    return PassHashCommon.generateHashWord (
-      tag,
-      input,
-      config.policy.length,
-      config.policy.custom.d, // require digits
-      config.policy.custom.p, // require punctuation
-      config.policy.custom.m, // require mixed case
-      config.policy.custom.r, // no special characters
-      false // only digits
-    );
-  } else {
-    return PassHashCommon.generateHashWord (
-      tag,
-      input,
-      config.policy.length,
-      true, // require digits
-      config.policy.strength > 1, // require punctuation
-      true, // require mixed case
-      config.policy.strength < 2, // no special characters
-      config.policy.strength == 0 // only digits
-    );
-  }
+    return generateHashL(config, input, config.policy.length);
 }
 
 function bump (tag) {
