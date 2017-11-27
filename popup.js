@@ -46,8 +46,7 @@ function readModel () {
 		$('#tag').val ("compatible:" + config.tag);
 	}
 	if (false == config.options.backedUp && false == config.options.compatibilityMode) {
-		$('div#compatmodeheader').html ("<b>Warning:</b>");
-		$('div#compatmode').text ("You have not yet indicated that you have backed up your private key. Please do so on the Options page.");
+		$('div#compatmodeheader').html ("<b>Warning:</b> You have not yet indicated that you have backed up your private key. Please do so on the Options page.");
 	}
 	if(null != config.policy.seed && config.policy.seed != config.options.privateSeed) {
 		$("#syncneeded").removeClass("hidden");
