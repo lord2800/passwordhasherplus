@@ -12,7 +12,7 @@
         },
 
 	"background": {
-		"page":"background.html"
+		"scripts": [ "lib/tld.min.js", "common.js", "storage.js", "storagearea.js", "background.js" ]
 	},
 
 	"options_ui": {
@@ -43,7 +43,7 @@
         },
 
 	"permissions": [
-		"activeTab", "tabs", "menus", "storage", "http://*/*", "https://*/*", "clipboardWrite"
+		"activeTab", "tabs", "menus", "storage", "<all_urls>", "clipboardWrite"
 	],
 
 	"content_security_policy": "script-src 'self' 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=' 'sha256-xaA6jdp8Hrg9UJVct3bu0uieCYCytFZrv/nqG7Kouys=' 'sha256-leDZ7yEeVa7Q7xy2S/45h+BUogqAQoBrDTpBkTFNkMk=' 'sha256-thpfFgw1VMy7GcMXqpWVABUalukoNCn0g0kQTelDqEA=' 'sha256-+uC+2tyReBuCeox8zV0E1QLvYAH+UkWvyqz5Rr+sdNk=' 'sha256-MB52pf5SCKlStcm4MEYmNRveQ9ufaTgAlPJhg7kix1Q=' ; object-src 'self'"

@@ -32,26 +32,16 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-var last_focused_elem;
-var debug = true;
-
-var port = chrome.runtime.connect({name: "passhash"});
+var debug = false;
+var maskKey;
 
 var id = 0;
 
 var fields = new Array ();
 
-function loadOptions(resultHandler) {
-    browser.storage.local.get('sync').then(results => {
-        var area = results.sync ? browser.storage.sync : browser.storage.local;
-        area.get('options').then(optres => {
-            resultHandler(optres.options);
-        });
-    });
-}
-
 function bind (f) {
     var field = f;
+    /* make sure each field we care about has an id */
     if ("" == field.id) {
         field.id = "passhash_" + id++;
     }
@@ -89,11 +79,6 @@ function bind (f) {
         setFieldType ();
     }
 
-    function requestHash() {
-        console.log("[passhashplus content-script] remembering element");
-        last_focused_elem = field;
-    }
-
     $(field).qtip ({
         content: {
             text: content
@@ -124,31 +109,25 @@ function bind (f) {
         }
     });
 
-    $(field).on('focus', function(e) {
-        last_focused_elem = field;
-    });
-
     $(field).keydown (function (e) {
-        loadOptions(function(options) {
-            var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
-            if (shortcut == options.hashKey)
-                requestHash ();
-            if (shortcut == options.maskKey)
-                toggleMasking ();
-            if (e.which == 13) {
-                $(field).qtip ("hide");
-            }
-        });
+        var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
+        if (shortcut == maskKey)
+            toggleMasking ();
+        if (e.which == 13) {
+            $(field).qtip ("hide");
+        }
     });
 
     setFieldType ();
     return true;
 }
 
+// Initialize each password field
 $("input[type=password]").each (function (index) {
 	bind (this);
 });
 
+// Make sure we react to dynamically appearing elements
 function onMutation (mutations, observer) {
     mutations.forEach (function(mutation) {
         for (var i = 0; i < mutation.addedNodes.length; ++i) {
@@ -163,36 +142,20 @@ function onMutation (mutations, observer) {
         }
     });
 }
+var observer = new MutationObserver (onMutation);
+observer.observe (document, { childList: true, subtree: true });
 
-
-port.onMessage.addListener (function (msg) {
-    if (null != msg.hash) {
-        var elem = last_focused_elem;
-        if (debug) console.log("got hash " + msg.hash + ", last focused elem: " + elem);
-        if (elem != null) {
-            elem.blur();
-            elem.value = msg.hash;
-            elem.focus();
-            // flash element when we change value to give visual feedback
-            var origbg = $(elem).css("background-color");
-            $(elem).css({'background-color': "#ffffd5"}).delay(250).queue((next) => {
-                $(elem).css({
-                    'background-color': origbg,
-                    'transition': 'background-color 250ms'
-                });
-                next();
-            });
-        }
-    }
-    if (null != msg.init) {
-        var observer = new MutationObserver (onMutation);
-        observer.observe (document, { childList: true, subtree: true });
-        document.addEventListener("mousedown", function(evt) {
-            console.log("element "+ evt.target + ", id: " + evt.target.id +" clicked");
-            // remember clicked element
-            last_focused_elem = evt.target;
-        });
+// Grab options from storage
+browser.storage.local.get('sync').then(results => {
+    var area = results.sync ? browser.storage.sync : browser.storage.local;
+    area.get('options').then(optres => {
+        maskKey = optres.options.maskKey;
+    });
+});
+// Register for storage changes to update maskkey when necessary
+browser.storage.onChanged.addListener(function (changes, areaName) {
+    if ('options' in changes) {
+        maskKey = changes.options.newValue.maskKey;
+        if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
     }
 });
-
-port.postMessage ({init: true, url:location.href});
