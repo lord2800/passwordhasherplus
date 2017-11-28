@@ -45,14 +45,15 @@ details > summary {
   font-weight:bold;
 }
 button.unmask {
+  height:24px;
   width:24px;
-  text-align:center;
 }
 #hash-hint,
 #master-hint {
   position:absolute;
+  height:16px;
   /* XXX! */
-  top:3px;
+  top:4px;
   right:33px;
   display:inline-block;
   color:#666;
