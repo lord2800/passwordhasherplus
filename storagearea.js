@@ -1,4 +1,4 @@
-var debug = true;
+var debug = false;
 
 // TODO: update to storage version 7?
 var CURRENT_STORAGE_VER = 6;

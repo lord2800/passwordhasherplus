@@ -92,7 +92,7 @@ function generateGuid () {
 }
 
 function generateHashL (config, input, length) {
-    console.log("[common.js:generateHashL] length = " + length);
+    if (debug) console.log("[common.js:generateHashL] length = " + length);
     var tag = config.tag;
 
     if (false == config.options.compatibilityMode && null != config.policy.seed) {

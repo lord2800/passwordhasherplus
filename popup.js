@@ -9,7 +9,7 @@ function rehash(e) {
     var master_hint = PassHashCommon.generateHashWord(
             masterpw, masterpw, 2, true, false, true, true, false);
     // generate hashword hint based on config, but length 2
-    console.log("config.policy.length: "+config.policy.length);
+    if (debug) console.log("config.policy.length: "+config.policy.length);
     var hash_hint = generateHashL(config, masterpw, 2);
     document.getElementById('hashword').value = hash;
     document.getElementById('master-hint').textContent = master_hint;
@@ -43,7 +43,7 @@ function writeModel () {
 }
 
 function readModel () {
-    console.log("readModel()");
+    if (debug) console.log("readModel()");
     $('#tag').val (config.tag);
     $('#length').val (config.policy.length);
     $('#strength').val (config.policy.strength);
@@ -59,7 +59,7 @@ function readModel () {
             $("#syncneeded").removeClass("hidden");
     }
     if (config.policy.strength == -1) {
-            console.log("custom strength: show checkboxes");
+            if (debug) console.log("custom strength: show checkboxes");
             $('#strength-requirements').removeClass('hidden');
             $('#strength-restrictions').removeClass('hidden');
             if (config.policy.custom === undefined) {
@@ -70,7 +70,7 @@ function readModel () {
             $('#m').prop('checked', config.policy.custom.m);
             $('#r').prop('checked', config.policy.custom.r);
     } else {
-            console.log("not custom strength: hide checkboxes");
+            if (debug) console.log("not custom strength: hide checkboxes");
             $('#strength-requirements').addClass('hidden');
             $('#strength-restrictions').addClass('hidden');
     }
