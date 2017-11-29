@@ -29,11 +29,5 @@ browser.menus.create({
         "32": "images/passhash.png"
     },
     contexts: ["editable", "password"],
-});
-
-/* open page action when context menu is clicked */
-browser.menus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId == "open-passhash") {
-        browser.pageAction.openPopup();
-    }
+    command: "_execute_page_action",
 });
