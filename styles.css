@@ -33,22 +33,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-.qtip {
-    min-width: 1em;
-}
-
-.ui-tooltip-rounded, .ui-tooltip-rounded .ui-tooltip-content {
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
-}
-
 .passhashbutton {
-	-webkit-appearance: button;
-	align: left;
-	width: 1em;
-	padding: 2px 2px;
-	margin: 2px 5px;
-	text-align: center;
-	display: inline;
-	cursor: default;
+  background:#ffffd4;
+  border:1px solid #ffff30;
+  width: 2em;
+  padding: 2px 4px;
+  margin: 2px 5px;
+  text-align: center;
+  cursor: default;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  position:absolute;
+  display:inline-block;
+  font-size:75%;
+}
+.hidden {
+  visibility:hidden;
 }

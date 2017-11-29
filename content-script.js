@@ -46,16 +46,24 @@ function bind (f) {
         field.id = "passhash_" + id++;
     }
 
-    if (-1 != $.inArray(field, fields) || $(field).hasClass ("nopasshash")) {
+    if (-1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
         return false;
     }
     fields[fields.length] = field;
 
     var masking = true;
 
+    /* create unmask button */
     var content = '<span class="passhashbutton maskbutton"/>';
-
-    var maskbutton;
+    var maskbutton = document.createElement('div');
+    maskbutton.classList.add('passhashbutton');
+    maskbutton.innerHTML = content;
+    field.parentNode.insertBefore(maskbutton, field.nextSibling);
+    /* position at the bottom left corner of password field */
+    var fieldBB = field.getBoundingClientRect();
+    var btnBB = maskbutton.getBoundingClientRect();
+    maskbutton.style['top'] = `${fieldBB.bottom-2}px`;
+    maskbutton.style.left = `${fieldBB.left-2}px`;
 
     /* toggle masking... maybe remove here? */
     function setFieldType () {
@@ -73,48 +81,20 @@ function bind (f) {
             }
         }
     }
-
     function toggleMasking () {
         masking = !masking;
         setFieldType ();
     }
 
-    $(field).qtip ({
-        content: {
-            text: content
-        },
-        position: { my: 'top right', at: 'bottom right' },
-        show: {
-            event: 'focus mouseenter',
-            solo: true
-        },
-        hide: {
-            fixed: true,
-            event: 'unfocus'
-        },
-        style: {
-            classes: 'ui-tooltip-light ui-tooltip-rounded'
-        },
-        events: {
-            visible: function (event, api) {
-                if (null != maskbutton) {
-                    return;
-                }
-
-                maskbutton = $(".maskbutton", api.elements.content).get (0);
-
-                maskbutton.addEventListener ("click", toggleMasking);
-                setFieldType ();
-            }
-        }
-    });
-
-    $(field).keydown (function (e) {
+    /* make button do something */
+    maskbutton.addEventListener('click', toggleMasking);
+    /* bind shortcut also */
+    field.addEventListener('keydown', function (e) {
         var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
         if (shortcut == maskKey)
             toggleMasking ();
         if (e.which == 13) {
-            $(field).qtip ("hide");
+            hidetooltip();
         }
     });
 
@@ -123,9 +103,10 @@ function bind (f) {
 }
 
 // Initialize each password field
-$("input[type=password]").each (function (index) {
-	bind (this);
-});
+var pwfields = document.querySelectorAll("input[type=password]");
+for (let field of pwfields) {
+    bind(field);
+}
 
 // Make sure we react to dynamically appearing elements
 function onMutation (mutations, observer) {
