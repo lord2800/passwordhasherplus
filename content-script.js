@@ -35,6 +35,8 @@
 var debug = false;
 var maskKey;
 
+console.log("content script");
+
 var id = 0;
 
 var fields = new Array ();
@@ -102,11 +104,16 @@ function bind (f) {
     return true;
 }
 
-// Initialize each password field
-var pwfields = document.querySelectorAll("input[type=password]");
-for (let field of pwfields) {
-    bind(field);
+// Initialize all password fields
+function initAllFields() {
+    var pwfields = document.querySelectorAll("input[type=password]");
+    for (let field of pwfields) {
+        bind(field);
+    }
 }
+
+// run on initial page content
+initAllFields();
 
 // Make sure we react to dynamically appearing elements
 function onMutation (mutations, observer) {
@@ -116,9 +123,7 @@ function onMutation (mutations, observer) {
             if (item.nodeName == 'INPUT' && item.type == 'password') {
                 bind(item);
             } else {
-                $("input[type=password]", item).each(function (i) {
-                    bind(this);
-                })
+                initAllFields();
             }
         }
     });

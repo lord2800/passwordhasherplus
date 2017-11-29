@@ -29,8 +29,8 @@
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["lib/jquery-3.1.1.min.js", "lib/jquery.qtip.min.js", "content-script.js"],
-			"css": ["lib/jquery.qtip.min.css", "styles.css"],
+			"js": ["content-script.js"],
+			"css": ["styles.css"],
 			"run_at": "document_end",
 			"all_frames": true
 		}
