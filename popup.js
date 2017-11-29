@@ -1,6 +1,7 @@
 var storage;
 var url;
 var config;
+var debug = true;
 
 function rehash(e) {
     var masterpw = document.getElementById('masterpw').value;
@@ -17,26 +18,26 @@ function rehash(e) {
 }
 
 function writeModel () {
-    config.tag = $('#tag').val ();
+    config.tag = document.getElementById('tag').value;
     if (config.tag.startsWith ("compatible:")) {
         config.tag = config.tag.substringAfter ("compatible:");
         delete config.policy.seed;
     } else {
         config.policy.seed = config.options.privateSeed;
     }
-    config.policy.length = $('#length').val ();
-    config.policy.strength = $('#strength').val ();
+    config.policy.length = document.getElementById('length').value;
+    config.policy.strength = document.getElementById('strength').value;
     if (config.policy.strength == -1) {
         config.policy.custom = new Object();
-        config.policy.custom.d = $('#d').prop('checked');
-        config.policy.custom.p = $('#p').prop('checked');
-        config.policy.custom.m = $('#m').prop('checked');
-        config.policy.custom.r = $('#r').prop('checked');
+        config.policy.custom.d = document.getElementById('d').checked;
+        config.policy.custom.p = document.getElementById('p').checked;
+        config.policy.custom.m = document.getElementById('m').checked;
+        config.policy.custom.r = document.getElementById('r').checked;
     } else {
         delete config.policy.custom;
     }
     if(null == config.policy.seed || config.policy.seed == config.options.privateSeed) {
-        $("#syncneeded").addClass("hidden");
+        document.getElementById('syncneeded').classList.add("hidden");
     }
     if (debug) console.log("[popup.js] saving config");
     storage.saveConfig(url, config, refreshPopup);
@@ -44,35 +45,35 @@ function writeModel () {
 
 function readModel () {
     if (debug) console.log("readModel()");
-    $('#tag').val (config.tag);
-    $('#length').val (config.policy.length);
-    $('#strength').val (config.policy.strength);
+    document.getElementById('tag').value = config.tag;
+    document.getElementById('length').value = config.policy.length;
+    document.getElementById('strength').val = config.policy.strength;
     if (true == config.options.compatibilityMode) {
-            $('div#compatmodeheader').html ("<b>Compatibility:</b> on");
+        document.getElementById('compatmodeheader').innerHTML =
+            "<b>Compatibility:</b> on";
     } else if (null == config.policy.seed) {
-            $('#tag').val ("compatible:" + config.tag);
+            document.getElementById('tag').value = "compatible:" + config.tag;
     }
     if (false == config.options.backedUp && false == config.options.compatibilityMode) {
-            $('div#compatmodeheader').html ("<b>Warning:</b> You have not yet indicated that you have backed up your private key. Please do so on the Options page.");
+        document.getElementById('compatmodeheader').innerHTML =
+            "<b>Warning:</b> You have not yet indicated that you have backed up your private key. Please do so on the Options page.";
     }
     if(null != config.policy.seed && config.policy.seed != config.options.privateSeed) {
-            $("#syncneeded").removeClass("hidden");
+        document.getElementById('syncneeded').classList.remove('hidden');
     }
     if (config.policy.strength == -1) {
             if (debug) console.log("custom strength: show checkboxes");
-            $('#strength-requirements').removeClass('hidden');
-            $('#strength-restrictions').removeClass('hidden');
+            document.getElementById('strength-requirements').classList.remove('hidden');
             if (config.policy.custom === undefined) {
                 config.policy.custom = config.options.custom;
             }
-            $('#d').prop('checked', config.policy.custom.d);
-            $('#p').prop('checked', config.policy.custom.p);
-            $('#m').prop('checked', config.policy.custom.m);
-            $('#r').prop('checked', config.policy.custom.r);
+            document.getElementById('d').checked = config.policy.custom.d;
+            document.getElementById('p').checked = config.policy.custom.p;
+            document.getElementById('m').checked = config.policy.custom.m;
+            document.getElementById('r').checked = config.policy.custom.r;
     } else {
             if (debug) console.log("not custom strength: hide checkboxes");
-            $('#strength-requirements').addClass('hidden');
-            $('#strength-restrictions').addClass('hidden');
+            document.getElementById('strength-requirements').classList.add('hidden');
     }
     if (debug) console.log("[popup.js:readModel] rehashing...");
     rehash();
@@ -91,21 +92,28 @@ function refreshPopup() {
     });
 }
 
-$('#bump').click (function () {
-	$("#tag").val (bump ($("#tag").val ()));
+document.getElementById('bump').addEventListener('click', function () {
+    var tagField = document.getElementById('tag');
+	tagField.value = bump (tagField.value);
 	writeModel ();
 });
 
-$('#tag').on('input change', writeModel);
-$('#length').change (writeModel);
-$('#strength').change (writeModel)
-$('#d').change(writeModel);
-$('#p').change(writeModel);
-$('#m').change(writeModel);
-$('#r').change(writeModel);
+document.getElementById('tag').addEventListener('input', writeModel);
+document.getElementById('tag').addEventListener('change', writeModel);
+document.getElementById('length').addEventListener('change', writeModel);
+document.getElementById('strength').addEventListener('change', writeModel)
+document.getElementById('d').addEventListener('change', writeModel);
+document.getElementById('p').addEventListener('change', writeModel);
+document.getElementById('m').addEventListener('change', writeModel);
+document.getElementById('r').addEventListener('change', writeModel);
 // for hashing
-$('#masterpw').on('input change', rehash);
-$('#hasher').submit(function() {
+document.getElementById('masterpw').addEventListener('input', rehash);
+document.getElementById('masterpw').addEventListener('change', rehash);
+// form submit / cancel
+document.getElementById('cancel').addEventListener('click', function() {
+    window.close();
+});
+document.getElementById('hasher').addEventListener('submit', function() {
     var hash = document.getElementById('hashword').value;
     if(debug) console.log("[popup.js] submitting hash '" + hash + "' to content script");
     browser.extension.getBackgroundPage().forwardHash(config.tag, hash);
@@ -124,20 +132,21 @@ function maskUnmask(elemid) {
         document.getElementById(buttonid).textContent = 'a';
     }
 }
-$('#unmask-masterpw').click(()=>{maskUnmask('masterpw')});
-$('#unmask-hashword').click(()=>{maskUnmask('hashword')});
 
-$(document).ready(function() {
-    // populate popup fields
-    refreshPopup();
+document.getElementById('unmask-masterpw').addEventListener('click',
+        ()=>{maskUnmask('masterpw')});
+document.getElementById('unmask-hashword').addEventListener('click',
+        ()=>{maskUnmask('hashword')});
 
-    $('#masterpw').focus();
+// populate popup fields
+refreshPopup();
 
-    $('#link-options').click(function() {
-        chrome.runtime.openOptionsPage();
-    });
-    $('#portablePage').click(function() {
-        // For compatibility with Firefox just do /page.html for URL
-        chrome.tabs.create({url:'/passhashplus.html?tag=' + $('#tag').val()})
-    });
-})
+setTimeout(()=>{document.getElementById('masterpw').focus();}, 0);
+
+document.getElementById('link-options').addEventListener('click', function() {
+    chrome.runtime.openOptionsPage();
+});
+document.getElementById('portablePage').addEventListener('click', function() {
+    // For compatibility with Firefox just do /page.html for URL
+    chrome.tabs.create({url:'/passhashplus.html?tag=' + document.getElementById('tag').value})
+});
