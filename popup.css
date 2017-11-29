@@ -26,10 +26,14 @@ select {
 .form-group h2 {
   font-size: 12px;
   padding-bottom: 0px;
-  margin-bottom: 3px;
+  margin: 3px 0;
 }
 #tag {
-  width:134px;
+  width:140px;
+}
+#bump {
+  text-align: center;
+  width:55px;
 }
 #masterpw,
 #hashword {
@@ -37,6 +41,7 @@ select {
 }
 #hasher > p.browser-style {
   clear:left;
+  margin-bottom:3px;
 }
 details {
   margin-top:6px;
@@ -45,6 +50,7 @@ details > summary {
   font-weight:bold;
 }
 button.unmask {
+  text-align:center;
   height:24px;
   width:24px;
 }
@@ -61,4 +67,18 @@ button.unmask {
   text-align:center;
   padding:1px 3px;
   font-family:monospace;
+}
+#submit,
+#cancel {
+  width: 100px;
+  text-align: center;
+  height:24px;
+}
+.buttonrow {
+  width:210px;
+  margin: 0 auto;
+  padding: 0;
+}
+#hasher {
+  margin-bottom:3px;
 }

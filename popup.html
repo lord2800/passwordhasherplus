@@ -50,7 +50,7 @@
 </head>
 
 <body>
-<div id="hasher">
+<form id="hasher">
 	<div id="compatmodeheader"></div>
 	<p class="browser-style">
 		<label class="browser-style field" for="tag">Site Tag:</label>
@@ -60,16 +60,20 @@
 	<p class="browser-style" style="position:relative">
 		<label class="browser-style field" for="masterpw">Master password:</label>
 		<input type="password" id="masterpw" value="" autofocus tabindex="1"></input>
-		<button class="browser-style unmask" id="unmask-masterpw" title="Mask/unmask master password">a</button>
+		<button type="button" class="browser-style unmask" id="unmask-masterpw" title="Mask/unmask master password">a</button>
 		<span id="master-hint">XX</span>
 	</p>
 	<p class="browser-style" style="position:relative">
 		<label class="browser-style field" for="hashword">Hash word:</label>
 		<input type="password" id="hashword" value="" readonly/>
-		<button class="browser-style unmask" id="unmask-hashword" title="Mask/unmask hash word">a</button>
+		<button type="button" class="browser-style unmask" id="unmask-hashword" title="Mask/unmask hash word">a</button>
 		<span id="hash-hint">XX</span>
 	</p>
-</div>
+	<div class="buttonrow">
+		<button type="button" class="browser-style" id="cancel" title="Cancel">Cancel</button>
+		<button class="browser-style" id="submit" title="Submit">OK</button>
+	</div>
+</form>
 <details>
 	<summary>Page Options</summary>
 	<div id="#page-options">

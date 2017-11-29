@@ -105,13 +105,11 @@ $('#m').change(writeModel);
 $('#r').change(writeModel);
 // for hashing
 $('#masterpw').on('input change', rehash);
-$('#masterpw').keypress(function(e) {
-    if (e.which == 13) {
-        var hash = document.getElementById('hashword').value;
-        if(debug) console.log("[popup.js] submitting hash '" + hash + "' to content script");
-        browser.extension.getBackgroundPage().forwardHash(config.tag, hash);
-        window.close();
-    }
+$('#hasher').submit(function() {
+    var hash = document.getElementById('hashword').value;
+    if(debug) console.log("[popup.js] submitting hash '" + hash + "' to content script");
+    browser.extension.getBackgroundPage().forwardHash(config.tag, hash);
+    window.close();
 });
 
 /* handle masking / unmasking of password and hash fields */
