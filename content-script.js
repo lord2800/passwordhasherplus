@@ -35,11 +35,56 @@
 var debug = false;
 var maskKey;
 
-console.log("content script");
-
 var id = 0;
 
 var fields = new Array ();
+var extract_number = new RegExp ("^([0-9]+)px$");
+
+function getStyles(field, styles) {
+    var fieldStyles = getComputedStyle(field, null);
+    var results = {};
+    for (let prop of styles) {
+        var r = extract_number.exec(fieldStyles[prop]);
+        if (r == null) {
+            results[prop] = fieldStyles[prop];
+        } else {
+            results[prop] = Number(r[1]);
+        }
+    }
+    return results;
+}
+
+function createMaskButton(field) {
+    if (debug) console.log("creating mask button for field " + field.id);
+    /* create unmask button */
+    var content = '<span class="passhashbutton maskbutton"/>';
+    var maskbutton = document.createElement('div');
+    maskbutton.classList.add('passhashbutton');
+    maskbutton.innerHTML = content;
+    /* position at the bottom right corner of password field */
+    var fs = getStyles(field, [ 'display', 'width', 'height',
+            'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+            'margin-top', 'margin-bottom', 'margin-left',
+            'border-bottom-right-radius', 'border-top-width',
+            'border-bottom-width', 'border-left-width', 'border-right-width']);
+    if (fs.display == 'none') {
+        // shortcircuit when field is display:none
+        return maskbutton;
+    }
+    field.parentNode.insertBefore(maskbutton, field);
+    // We get the field dimensions from the field's computed styles
+    var margintop = fs.height + fs['border-top-width'] +
+        fs['border-bottom-width'] + fs['padding-top'] + fs['padding-bottom'] +
+        fs['margin-top'];
+    maskbutton.style['margin-top'] = `${margintop}px`;
+    if (debug) console.log("maskbutton.margin-top: " + maskbutton.style['margin-top']);
+    var marginleft = fs.width - fs['border-bottom-right-radius'] - 30 +
+        fs['border-left-width'] + fs['padding-left'] + fs['margin-left'] +
+        fs['padding-right'];
+    maskbutton.style['margin-left'] = `${marginleft}px`;
+    if (debug) console.log("maskbutton.margin-left: " + maskbutton.style['margin-left']);
+    return maskbutton;
+}
 
 function bind (f) {
     var field = f;
@@ -55,17 +100,7 @@ function bind (f) {
 
     var masking = true;
 
-    /* create unmask button */
-    var content = '<span class="passhashbutton maskbutton"/>';
-    var maskbutton = document.createElement('div');
-    maskbutton.classList.add('passhashbutton');
-    maskbutton.innerHTML = content;
-    field.parentNode.insertBefore(maskbutton, field.nextSibling);
-    /* position at the bottom left corner of password field */
-    var fieldBB = field.getBoundingClientRect();
-    var btnBB = maskbutton.getBoundingClientRect();
-    maskbutton.style['top'] = `${fieldBB.bottom-2}px`;
-    maskbutton.style.left = `${fieldBB.left-2}px`;
+    var maskbutton = createMaskButton(field);
 
     /* toggle masking... maybe remove here? */
     function setFieldType () {
@@ -95,9 +130,6 @@ function bind (f) {
         var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
         if (shortcut == maskKey)
             toggleMasking ();
-        if (e.which == 13) {
-            hidetooltip();
-        }
     });
 
     setFieldType ();

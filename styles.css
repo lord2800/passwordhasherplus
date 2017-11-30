@@ -36,17 +36,17 @@
 .passhashbutton {
   background:#ffffd4;
   border:1px solid #ffff30;
-  width: 2em;
+  color:#333;
+  width: 22px;
   padding: 2px 4px;
-  margin: 2px 5px;
   text-align: center;
   cursor: default;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   position:absolute;
   display:inline-block;
-  font-size:75%;
+  font-size:11px;
 }
 .hidden {
-  visibility:hidden;
+  display:none;
 }
