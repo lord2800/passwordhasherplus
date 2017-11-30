@@ -141,12 +141,14 @@ document.getElementById('unmask-hashword').addEventListener('click',
 // populate popup fields
 refreshPopup();
 
-setTimeout(()=>{document.getElementById('masterpw').focus();}, 0);
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(()=>{document.getElementById('masterpw').focus();}, 0);
 
-document.getElementById('link-options').addEventListener('click', function() {
-    chrome.runtime.openOptionsPage();
-});
-document.getElementById('portablePage').addEventListener('click', function() {
-    // For compatibility with Firefox just do /page.html for URL
-    chrome.tabs.create({url:'/passhashplus.html?tag=' + document.getElementById('tag').value})
+    document.getElementById('link-options').addEventListener('click', function() {
+        chrome.runtime.openOptionsPage();
+    });
+    document.getElementById('portablePage').addEventListener('click', function() {
+        // For compatibility with Firefox just do /page.html for URL
+        chrome.tabs.create({url:'/passhashplus.html?tag=' + document.getElementById('tag').value})
+    });
 });
