@@ -19,6 +19,11 @@ browser.tabs.query({}).then(opentabs => {
     }
 });
 
+/* enable page action for new tabs */
+browser.tabs.onUpdated.addListener((tabid,changeinfo) => {
+    browser.pageAction.show(tabid);
+});
+
 /* create context menu item for all editable fields */
 browser.menus.create({
     id: 'open-passhash',
