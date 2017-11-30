@@ -1,6 +1,16 @@
+/*
+ * We fire change and keyup events after we edit the value of the currently
+ * focused password field to catch the most common ways to do client-side
+ * password verification.
+ */
 function updateFocusedField(tabid, hash) {
     browser.tabs.executeScript(tabid, {
-        code: 'document.activeElement.value = "' + hash + '";'
+        code: `
+document.activeElement.value = '${hash}';
+var evt = new Event('change');
+setTimeout(document.activeElement.dispatchEvent(evt), 0);
+evt = new Event('keyup');
+setTimeout(document.activeElement.dispatchEvent(evt), 0);`
     });
 }
 
