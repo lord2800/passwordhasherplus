@@ -142,8 +142,6 @@ document.getElementById('unmask-hashword').addEventListener('click',
 refreshPopup();
 
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(()=>{document.getElementById('masterpw').focus();}, 0);
-
     document.getElementById('link-options').addEventListener('click', function() {
         chrome.runtime.openOptionsPage();
     });
