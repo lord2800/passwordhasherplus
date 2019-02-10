@@ -38,7 +38,7 @@ var debug = false;
 // XXX: Inject npm packages when running tests
 if (typeof require !== 'undefined') {
     if (typeof tld === 'undefined') {
-        var tld = require('lib/tld.min.js');
+        var tld = require('lib/tld.js');
     }
     if (typeof crypto === 'undefined') {
         var crypto = new Object();
@@ -47,6 +47,9 @@ if (typeof require !== 'undefined') {
     if (typeof PassHashCommon === 'undefined') {
         PassHashCommon = require('lib/passhashcommon.js').PassHashCommon;
     }
+} else {
+    // tldjs 2.3.1 exports itself as window.tldjs
+    window.tld = window.tldjs
 }
 
 String.prototype.startsWith = function (str) {
@@ -91,45 +94,50 @@ function generateGuid () {
 	}).toUpperCase ();
 }
 
+function generateHashL (config, input, length) {
+    if (debug) console.log("[common.js:generateHashL] length = " + length);
+    var tag = config.tag;
+
+    if (false == config.options.compatibilityMode && null != config.policy.seed) {
+        tag = PassHashCommon.generateHashWord (
+                config.policy.seed,
+                tag,
+                24,
+                true, // require digits
+                true, // require punctuation
+                true, // require mixed case
+                false, // no special characters
+                false // only digits
+                );
+    }
+
+    if (config.policy.strength == -1) {
+        return PassHashCommon.generateHashWord (
+                tag,
+                input,
+                length,
+                config.policy.custom.d, // require digits
+                config.policy.custom.p, // require punctuation
+                config.policy.custom.m, // require mixed case
+                config.policy.custom.r, // no special characters
+                false // only digits
+                );
+    } else {
+        return PassHashCommon.generateHashWord (
+                tag,
+                input,
+                length,
+                true, // require digits
+                config.policy.strength > 1, // require punctuation
+                true, // require mixed case
+                config.policy.strength < 2, // no special characters
+                config.policy.strength == 0 // only digits
+                );
+    }
+}
+
 function generateHash (config, input) {
-	var tag = config.tag;
-
-	if (false == config.options.compatibilityMode && null != config.policy.seed) {
-		tag = PassHashCommon.generateHashWord (
-			config.policy.seed,
-			tag,
-			24,
-			true, // require digits
-			true, // require punctuation
-			true, // require mixed case
-			false, // no special characters
-			false // only digits
-		);
-	}
-
-  if (config.policy.strength == -1) {
-    return PassHashCommon.generateHashWord (
-      tag,
-      input,
-      config.policy.length,
-      config.policy.custom.d, // require digits
-      config.policy.custom.p, // require punctuation
-      config.policy.custom.m, // require mixed case
-      config.policy.custom.r, // no special characters
-      false // only digits
-    );
-  } else {
-    return PassHashCommon.generateHashWord (
-      tag,
-      input,
-      config.policy.length,
-      true, // require digits
-      config.policy.strength > 1, // require punctuation
-      true, // require mixed case
-      config.policy.strength < 2, // no special characters
-      config.policy.strength == 0 // only digits
-    );
-  }
+    return generateHashL(config, input, config.policy.length);
 }
 
 function bump (tag) {
@@ -221,9 +229,12 @@ function grepUrl (url) {
         } else {
             //this shouldn't throw an error.
             //but just in case it does, handle it at (d)
+            console.log("grepUrl: address=" + address);
+            console.log("grepUrl: getDomain=" + tld.getDomain(address));
             return split_at_first_dot.exec(tld.getDomain(address))[1]; // c
         }
     } catch (e) {
+        console.log(e)
         return "chrome";                                               // d
     }
 }

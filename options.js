@@ -110,11 +110,11 @@ function setShortcut(action, e) {
 }
 
 function showHideCustomStrength() {
-  var strength = $('#strength').val();
+  var strength = document.getElementById('strength').value;
   if (strength == -1) {
-    $('#customstrengthrow').removeClass("hidden");
+    document.getElementById('customstrengthrow').classList.remove("hidden");
   } else {
-    $('#customstrengthrow').addClass("hidden");
+    document.getElementById('customstrengthrow').classList.add("hidden");
   }
 }
 // Add event listeners once the DOM has fully loaded by listening for the
@@ -131,23 +131,28 @@ document.addEventListener('DOMContentLoaded', function () {
         refreshStorage();
     });
 
-    $('#generate').click(setNewGuid);
-    $('#backupSave').click(saveOptions);
-    $('#backupRevert').click(restoreOptions);
-    $('#removeUnUsedTags').click(function() {storage.collectGarbage (); refreshStorage ();});
-    $('#dbClear').click(function() {clearStorage (); refreshStorage ();});
-    $('#dbSave').click(loadStorage);
-    $('#dbRevert').click(refreshStorage);
-    $('#syncSave').click(saveSync);
-    $('#strength').change(showHideCustomStrength);
+    document.getElementById('generate').addEventListener('click', setNewGuid);
+    document.getElementById('backupSave').addEventListener('click', saveOptions);
+    document.getElementById('backupRevert').addEventListener('click', restoreOptions);
+    document.getElementById('removeUnUsedTags').addEventListener('click',
+            function() {storage.collectGarbage (); refreshStorage ();});
+    document.getElementById('dbClear').addEventListener('click',
+            function() {clearStorage (); refreshStorage ();});
+    document.getElementById('dbSave').addEventListener('click', loadStorage);
+    document.getElementById('dbRevert').addEventListener('click', refreshStorage);
+    document.getElementById('syncSave').addEventListener('click', saveSync);
+    document.getElementById('strength').addEventListener('change', showHideCustomStrength);
 
-    $('#portablePage').click(function() {
-	chrome.tabs.create({url:'/passhashplus.html'})
-    });
+    document.getElementById('portablePage').addEventListener('click',
+            function() { chrome.tabs.create({url:'/passhashplus.html'}) });
 	
-	$('#hashkey').keydown(function(e) {setShortcut("hash", e)});
-	$('#maskkey').keydown(function(e) {setShortcut("mask", e)});
-	$('#haskeydefault').click(function() {var e = new Object(); e.which=0; setShortcut("hash", e)});
-	$('#maskkeydefault').click(function(e) {var e = new Object(); e.which=0; setShortcut("mask", e)});
+    document.getElementById('hashkey').addEventListener('keydown',
+            function(e) {setShortcut("hash", e)});
+    document.getElementById('maskkey').addEventListener('keydown',
+            function(e) {setShortcut("mask", e)});
+    document.getElementById('haskeydefault').addEventListener('click',
+            function() {var e = new Object(); e.which=0; setShortcut("hash", e)});
+    document.getElementById('maskkeydefault').addEventListener('click',
+            function(e) {var e = new Object(); e.which=0; setShortcut("mask", e)});
 
 });

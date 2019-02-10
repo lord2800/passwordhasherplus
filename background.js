@@ -1,42 +1,48 @@
-// use ports as keys, payload mostly ignored
-var ports = {};
-
-function refreshTabs () {
-	var keys = toArray (ports);
-	for (var i = 0; i < keys.length; ++i) {
-		var key = keys[i];
-                var port = ports[key];
-                console.dir(port);
-		if (debug) console.log ("Updating config for port " + key + " for " + port.passhashUrl);
-		storage.loadConfig(port.passhashUrl, cfg => {
-			port.postMessage ({ update: cfg });
-		});
-	}
+/*
+ * We fire change and keyup events after we edit the value of the currently
+ * focused password field to catch the most common ways to do client-side
+ * password verification.
+ */
+function updateFocusedField(tabid, hash) {
+    browser.tabs.executeScript(tabid, {
+        code: `
+document.activeElement.value = '${hash}';
+var evt = new Event('change');
+setTimeout(document.activeElement.dispatchEvent(evt), 0);
+evt = new Event('keyup');
+setTimeout(document.activeElement.dispatchEvent(evt), 0);`
+    });
 }
 
-chrome.runtime.onConnect.addListener (function (port) {
-	console.assert (port.name == "passhash");
-	port.onMessage.addListener (function (msg) {
-		if (null != msg.init) {
-			var url = grepUrl (msg.url);
-			storage.loadConfig (url, (cfg) => {
-                            console.dir(cfg);
-                            console.dir(port);
-                            if (debug) console.log("Registering port for url " + url);
-                            port.passhashUrl = url;
-                            ports[port] = port;
-                            port.postMessage ({ init: true, update: cfg });
-			});
-		} else if (null != msg.save) {
-			var url = grepUrl (msg.url);
-			saveConfig (url, msg.save, null);
-		}
-	});
+function forwardHash(tag, hash) {
+    if (debug) console.log("[background.js:forwardHash] got hash " + hash + " for page " + tag);
+    browser.tabs.query({active:true,currentWindow:true}).then(results => {
+        var tab = results[0];
+        updateFocusedField(tab.id, hash);
+    });
+}
 
-	port.onDisconnect.addListener (function (port) {
-		if (null != port.passhashUrl) {
-                    if (debug) console.log("deregistering port for url "+port.passhashUrl);
-                    delete ports[port];
-		}
-	});
+/* enable page action for all regular tabs */
+browser.tabs.query({}).then(opentabs => {
+    for (let tab of opentabs) {
+        browser.pageAction.show(tab.id);
+    }
+});
+
+/* enable page action for new tabs */
+browser.tabs.onUpdated.addListener((tabid,changeinfo) => {
+    browser.pageAction.show(tabid);
+});
+
+/* create context menu item for all editable fields */
+browser.menus.create({
+    id: 'open-passhash',
+    title: 'Password Hasher Plus',
+    /* TODO: figure out icons */
+    icons: {
+        "16": "images/passhash.png",
+        "32": "images/passhash.png"
+    },
+    contexts: ["editable", "password"],
+    command: "_execute_page_action",
 });

@@ -26,5 +26,60 @@ select {
 .form-group h2 {
   font-size: 12px;
   padding-bottom: 0px;
-  margin-bottom: 3px;
+  margin: 3px 0;
+}
+#tag {
+  width:140px;
+}
+#bump {
+  text-align: center;
+  width:55px;
+}
+#masterpw,
+#hashword {
+  width:170px;
+}
+#hasher > p.browser-style {
+  clear:left;
+  margin-bottom:3px;
+}
+details {
+  margin-top:6px;
+}
+details > summary {
+  font-weight:bold;
+}
+button.unmask {
+  text-align:center;
+  vertical-align:top;
+  height:24px;
+  width:24px;
+}
+#hash-hint,
+#master-hint {
+  position:absolute;
+  height:16px;
+  /* XXX! */
+  top:4px;
+  right:33px;
+  display:inline-block;
+  color:#666;
+  background-color:#ccc;
+  text-align:center;
+  padding:1px 3px;
+  font-family:monospace;
+}
+#submit,
+#cancel {
+  width: 100px;
+  text-align: center;
+  height:24px;
+}
+.buttonrow {
+  width:210px;
+  margin: 0 auto;
+  padding: 0;
+}
+#hasher {
+  margin-bottom:3px;
 }

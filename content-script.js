@@ -32,288 +32,146 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-var config;
-
-var port = chrome.runtime.connect({name: "passhash"});
+var debug = false;
+var maskKey;
 
 var id = 0;
 
 var fields = new Array ();
+var extract_number = new RegExp ("^([0-9]+)px$");
+
+function getStyles(field, styles) {
+    var fieldStyles = getComputedStyle(field, null);
+    var results = {};
+    for (let prop of styles) {
+        var r = extract_number.exec(fieldStyles[prop]);
+        if (r == null) {
+            results[prop] = fieldStyles[prop];
+        } else {
+            results[prop] = Number(r[1]);
+        }
+    }
+    return results;
+}
+
+function createMaskButton(field) {
+    if (debug) console.log("creating mask button for field " + field.id);
+    /* create unmask button */
+    var maskbutton = document.createElement('div');
+    maskbutton.classList.add('passhashbutton');
+    /* position at the bottom right corner of password field */
+    var fs = getStyles(field, [ 'display', 'width', 'height',
+            'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+            'margin-top', 'margin-bottom', 'margin-left',
+            'border-bottom-right-radius', 'border-top-width',
+            'border-bottom-width', 'border-left-width', 'border-right-width']);
+    if (fs.display == 'none') {
+        // shortcircuit when field is display:none
+        return maskbutton;
+    }
+    field.parentNode.insertBefore(maskbutton, field);
+    // We get the field dimensions from the field's computed styles
+    var margintop = fs.height + fs['border-top-width'] +
+        fs['border-bottom-width'] + fs['padding-top'] + fs['padding-bottom'] +
+        fs['margin-top'];
+    maskbutton.style['margin-top'] = `${margintop}px`;
+    if (debug) console.log("maskbutton.margin-top: " + maskbutton.style['margin-top']);
+    var marginleft = fs.width - fs['border-bottom-right-radius'] - 30 +
+        fs['border-left-width'] + fs['padding-left'] + fs['margin-left'] +
+        fs['padding-right'];
+    maskbutton.style['margin-left'] = `${marginleft}px`;
+    if (debug) console.log("maskbutton.margin-left: " + maskbutton.style['margin-left']);
+    return maskbutton;
+}
 
 function bind (f) {
-	var field = f;
-	if ("" == field.id) {
-		field.id = "passhash_" + id++;
-	}
+    var field = f;
+    /* make sure each field we care about has an id */
+    if ("" == field.id) {
+        field.id = "passhash_" + id++;
+    }
 
-	if (-1 != $.inArray(field, fields) || $(field).hasClass ("nopasshash")) {
-		return false;
-	}
-	fields[fields.length] = field;
+    if (-1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
+        return false;
+    }
+    fields[fields.length] = field;
 
-	var hasFocus = false;
-	var backgroundStyle = field.style.backgroundColor;
-	var input = field.value;
-	var hash = "";
-	var hashing = false;
-	var masking = true;
-	var editing = false;
+    var masking = true;
 
-	var content = '<span class="passhashbutton hashbutton"/><span class="passhashbutton maskbutton"/>';
+    var maskbutton = createMaskButton(field);
 
-	var hashbutton;
-	var maskbutton;
+    /* toggle masking... maybe remove here? */
+    function setFieldType () {
+        if (masking) {
+            field.type = "password";
+            if (null != maskbutton) {
+                maskbutton.innerHTML = "a";
+                maskbutton.title = "Show password (Ctrl + *)";
+            }
+        } else {
+            field.type = "text";
+            if (null != maskbutton) {
+                maskbutton.innerHTML = "*";
+                maskbutton.title = "Mask password (Ctrl + *)";
+            }
+        }
+    }
+    function toggleMasking () {
+        masking = !masking;
+        setFieldType ();
+    }
 
-	function rehash () {
-		hash = generateHash (config, input);
-	}
+    /* make button do something */
+    maskbutton.addEventListener('click', toggleMasking);
+    /* bind shortcut also */
+    field.addEventListener('keydown', function (e) {
+        var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
+        if (shortcut == maskKey)
+            toggleMasking ();
+    });
 
-	function paintHash () {
-		if ("" != input) {
-			field.value = hash;
-		} else {
-			field.value = "";
-		}
-		field.style.backgroundColor = "#D1D1D1";
-		editing = false;
-	}
-
-	function paintValue () {
-		field.value = input;
-		field.style.backgroundColor = backgroundStyle;
-		editing = true;
-	}
-
-	function paintHashButton () {
-		if (hashing) {
-			hashbutton.innerHTML = "\"";
-			hashbutton.title = "Literal password (Ctrl + #)"
-		} else {
-			hashbutton.innerHTML = "#";
-			hashbutton.title = "Hash password (Ctrl + #)"
-		}
-	}
-
-	function setFieldType () {
-		if (masking) {
-			field.type = "password";
-			if (null != maskbutton) {
-				maskbutton.innerHTML = "a";
-				maskbutton.title = "Show password (Ctrl + *)";
-			}
-		} else {
-			field.type = "text";
-			if (null != maskbutton) {
-				maskbutton.innerHTML = "*";
-				maskbutton.title = "Mask password (Ctrl + *)";
-			}
-		}
-	}
-
-	function update () {
-		input = field.value;
-		rehash ();
-	}
-
-	function toggleMasking () {
-		masking = !masking;
-		setFieldType ();
-	}
-
-	function getSelection () {
-		var txt = null;
-		if (window.getSelection) {
-			txt = window.getSelection ();
-		}
-		else if (document.getSelection) {
-			txt = document.getSelection ();
-		} else if (document.selection) {
-			txt = document.selection.createRange ().text;
-		}
-		if ("" == txt) {
-			return null;
-		}
-		return txt;
-	}
-
-	function copy () {
-		update ();
-		paintHash ();
-		field.select ();
-	}
-
-	function focusEvent () {
-		if (hashing) {
-			editing = true;
-			paintValue ();
-		}
-		hasFocus = true;
-	}
-
-	function blurEvent () {
-		if (editing) {
-			update ();
-		}
-		if (hashing) {
-			paintHash ();
-		}
-		hasFocus = false;
-	}
-
-	function rehashEvent () {
-		rehash ();
-		if (hashing) {
-			paintHash ();
-		}
-	}
-
-	function addFieldEventListeners () {
-		field.addEventListener ("focus", focusEvent);
-		field.addEventListener ("blur", blurEvent);
-		field.addEventListener ("change", update);
-		field.addEventListener ("rehash", rehashEvent);
-	}
-
-	function removeFieldEventListeners () {
-		field.removeEventListener ("focus", focusEvent);
-		field.removeEventListener ("blur", blurEvent);
-		field.removeEventListener ("change", update);
-		field.removeEventListener ("rehash", rehashEvent);
-	}
-
-	field.addEventListener ("sethash", function () {
-		toggleHashing (false);
-	});
-
-	function toggleHashing (save) {
-		hashing = !hashing;
-		if (hashing) {
-			update ();
-		}
-		if (null != hashbutton) {
-			paintHashButton ();
-		}
-		if (hashing) {
-			config.fields.add (field.id);
-			if (!hasFocus) {
-				rehash ();
-				paintHash ();
-			}
-			addFieldEventListeners ();
-		} else {
-			removeFieldEventListeners ();
-			config.fields.remove (field.id);
-			if (!hasFocus) {
-				paintValue ();
-			}
-		}
-		if (true == save) {
-			port.postMessage ({url: location.href, save: config});
-		}
-	}
-
-	$(field).qtip ({
-		content: {
-			text: content
-		},
-		position: { my: 'top right', at: 'bottom right' },
-		show: {
-			event: 'focus mouseenter',
-			solo: true
-		},
-		hide: {
-			fixed: true,
-			event: 'unfocus'
-		},
-		style: {
-			classes: 'ui-tooltip-light ui-tooltip-rounded'
-		},
-		events: {
-			visible: function (event, api) {
-				if (null != hashbutton) {
-					return;
-				}
-
-				hashbutton = $(".hashbutton", api.elements.content).get (0);
-				maskbutton = $(".maskbutton", api.elements.content).get (0);
-
-				hashbutton.addEventListener ("click", function () {
-					toggleHashing (true);
-				});
-
-				maskbutton.addEventListener ("click", toggleMasking);
-				paintHashButton ();
-				setFieldType ();
-			}
-		}
-	});
-
-	$(field).keydown (function (e) {
-		var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
-		if (shortcut == config.options.hashKey)
-			toggleHashing (true);
-		if (shortcut == config.options.maskKey)
-			toggleMasking ();
-		if (shortcut == "Ctrl+67" && null == getSelection () && !masking) // ctrl + c
-			copy ();
-		if (e.which == 13) {
-			update ();
-			if (hashing) {
-				paintHash ();
-			}
-			$(field).qtip ("hide");
-		}
-	});
-
-	setFieldType ();
-	return true;
+    setFieldType ();
+    return true;
 }
 
-$("input[type=password]").each (function (index) {
-	bind (this);
-});
+// Initialize all password fields
+function initAllFields() {
+    var pwfields = document.querySelectorAll("input[type=password]");
+    for (let field of pwfields) {
+        bind(field);
+    }
+}
 
-var setHashEvt = document.createEvent ("HTMLEvents");
-setHashEvt.initEvent ('sethash', true, true);
+// run on initial page content
+initAllFields();
 
-var rehashEvt = document.createEvent ("HTMLEvents");
-rehashEvt.initEvent ('rehash', true, true);
-
+// Make sure we react to dynamically appearing elements
 function onMutation (mutations, observer) {
-	mutations.forEach (function(mutation) {
-		for (var i = 0; i < mutation.addedNodes.length; ++i) {
-			var item = mutation.addedNodes[i];
-			if (item.nodeName == 'INPUT' && item.type == 'password') {
-				bind(item);
-			} else {
-				$("input[type=password]", item).each(function (i) {
-					bind(this);
-				})
-			}
-		}
-	});
+    mutations.forEach (function(mutation) {
+        for (var i = 0; i < mutation.addedNodes.length; ++i) {
+            var item = mutation.addedNodes[i];
+            if (item.nodeName == 'INPUT' && item.type == 'password') {
+                bind(item);
+            } else {
+                initAllFields();
+            }
+        }
+    });
 }
+var observer = new MutationObserver (onMutation);
+observer.observe (document, { childList: true, subtree: true });
 
-
-port.onMessage.addListener (function (msg) {
-	if (null != msg.update) {
-		if (debug) console.log ("Config updated " + JSON.stringify (msg.update));
-		config = msg.update;
-		config.fields = toSet (config.fields);
-		for (var i = 0; i < fields.length; ++i) {
-			fields[i].dispatchEvent (rehashEvt);
-		}
-	}
-	if (null != msg.init) {
-		for (var i = 0; i < fields.length; ++i) {
-			if (fields[i].id in config.fields) {
-				// Hashing for this field was persisted but it is not enabled yet
-				fields[i].dispatchEvent (setHashEvt);
-			}
-		}
-		var observer = new MutationObserver (onMutation);
-		observer.observe (document, { childList: true, subtree: true });
-	}
+// Grab options from storage
+browser.storage.local.get('sync').then(results => {
+    var area = results.sync ? browser.storage.sync : browser.storage.local;
+    area.get('options').then(optres => {
+        maskKey = optres.options.maskKey;
+    });
 });
-
-port.postMessage ({init: true, url:location.href});
+// Register for storage changes to update maskkey when necessary
+browser.storage.onChanged.addListener(function (changes, areaName) {
+    if ('options' in changes) {
+        maskKey = changes.options.newValue.maskKey;
+        if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
+    }
+});

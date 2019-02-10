@@ -15,7 +15,7 @@ export:
 
 ff_webext: clean
 	rm -f ../${zip} || exit 0
-	zip -r ../${zip} * --exclude lib/mocha.* lib/chai.* Makefile HACKING.md README.md spec.js test.html demo.html Screenshot.png "tests/*" "node_modules/*"
+	zip -r ../${zip} * --exclude lib/mocha.* lib/chai.* Makefile HACKING.md README.md spec.js test.html demo.html Screenshot*.png "tests/*" "node_modules/*"
 
 clean:
 	find . -name '*.sha256' -delete
@@ -26,7 +26,7 @@ test:
 %.sha256: %.js
 	cat $< | openssl dgst -sha256 -binary | openssl enc -base64 > $@
 
-update_csp: lib/jquery-3.1.1.min.sha256 lib/sha1.sha256 lib/passhashcommon.sha256 lib/tld.min.sha256 common.sha256 passhashplus.sha256
+update_csp: lib/jquery-3.1.1.min.sha256 lib/sha1.sha256 lib/passhashcommon.sha256 lib/tld.sha256 common.sha256 passhashplus.sha256
 	head -n-2 manifest.json > manifest_new.json
 	echo -n "\t\"content_security_policy\": \"script-src 'self' " >> manifest_new.json
 	for F in $^; do /usr/bin/test -e $$F && echo -n "'sha256-`cat $$F`' " >> manifest_new.json; done || true
