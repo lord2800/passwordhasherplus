@@ -94,8 +94,8 @@ function refreshPopup() {
 
 document.getElementById('bump').addEventListener('click', function () {
     var tagField = document.getElementById('tag');
-	tagField.value = bump (tagField.value);
-	writeModel ();
+    tagField.value = bump (tagField.value);
+    writeModel ();
 });
 
 document.getElementById('tag').addEventListener('input', writeModel);
