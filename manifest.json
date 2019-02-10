@@ -1,13 +1,13 @@
 {
   "manifest_version": 2,
   "name": "Password Hasher Plus - Password Generator",
-  "version": "2.4.0a1",
+  "version": "2.5.0",
   "description": "Password Hasher Plus automatically enhances password strength (length and difficulty) to protect your accounts.",
   "icons": { "64": "images/icon.png", "128": "images/icon.png" },
   "applications": {
     "gecko": {
       "id": "{ef60b2e8-9dbe-49f6-8c3c-58563028150f}",
-      "strict_min_version": "53.0"
+      "strict_min_version": "63.0"
     }
   },
 
