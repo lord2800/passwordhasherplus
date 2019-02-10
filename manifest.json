@@ -1,50 +1,50 @@
 {
-	"manifest_version": 2,
-	"name": "Password Hasher Plus - Password Generator",
-	"version": "2.4.1a0",
-	"description": "Password Hasher Plus automatically enhances password strength (length and difficulty) to protect your accounts.",
-	"icons": { "64": "images/icon.png", "128": "images/icon.png" },
-        "applications": {
-            "gecko": {
-		"id": "{ef60b2e8-9dbe-49f6-8c3c-58563028150f}",
-		"strict_min_version": "53.0"
-            }
-        },
+  "manifest_version": 2,
+  "name": "Password Hasher Plus - Password Generator",
+  "version": "2.4.0a1",
+  "description": "Password Hasher Plus automatically enhances password strength (length and difficulty) to protect your accounts.",
+  "icons": { "64": "images/icon.png", "128": "images/icon.png" },
+  "applications": {
+    "gecko": {
+      "id": "{ef60b2e8-9dbe-49f6-8c3c-58563028150f}",
+      "strict_min_version": "53.0"
+    }
+  },
 
-	"background": {
-		"scripts": [ "lib/tld.min.js", "common.js", "storage.js", "storagearea.js", "background.js" ]
-	},
+  "background": {
+    "scripts": [ "lib/tld.min.js", "common.js", "storage.js", "storagearea.js", "background.js" ]
+  },
 
-	"options_ui": {
-		"page": "options.html"
-	},
+  "options_ui": {
+    "page": "options.html"
+  },
 
-	"page_action": {
-		"browser_style": true,
-		"default_icon": "images/passhash.png",
-		"default_title": "Password Hasher",
-		"default_popup": "popup.html"
-	},
+  "page_action": {
+    "browser_style": true,
+    "default_icon": "images/passhash.png",
+    "default_title": "Password Hasher",
+    "default_popup": "popup.html"
+  },
 
-	"content_scripts": [
-		{
-			"matches": ["http://*/*", "https://*/*"],
-			"js": ["content-script.js"],
-			"css": ["styles.css"],
-			"run_at": "document_end",
-			"all_frames": true
-		}
-	],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content-script.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
 
-        "commands": {
-            "_execute_page_action": {
-                "suggested_key": { "default": "Ctrl+Shift+3" }
-            }
-        },
+  "commands": {
+    "_execute_page_action": {
+      "suggested_key": { "default": "Ctrl+Shift+3" }
+    }
+  },
 
-	"permissions": [
-		"activeTab", "tabs", "menus", "storage", "<all_urls>", "clipboardWrite"
-	],
+  "permissions": [
+    "activeTab", "tabs", "menus", "storage", "<all_urls>", "clipboardWrite"
+  ],
 
-	"content_security_policy": "script-src 'self' 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=' 'sha256-xaA6jdp8Hrg9UJVct3bu0uieCYCytFZrv/nqG7Kouys=' 'sha256-leDZ7yEeVa7Q7xy2S/45h+BUogqAQoBrDTpBkTFNkMk=' 'sha256-thpfFgw1VMy7GcMXqpWVABUalukoNCn0g0kQTelDqEA=' 'sha256-+uC+2tyReBuCeox8zV0E1QLvYAH+UkWvyqz5Rr+sdNk=' 'sha256-MB52pf5SCKlStcm4MEYmNRveQ9ufaTgAlPJhg7kix1Q=' ; object-src 'self'"
+  "content_security_policy": "script-src 'self' 'sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=' 'sha256-xaA6jdp8Hrg9UJVct3bu0uieCYCytFZrv/nqG7Kouys=' 'sha256-leDZ7yEeVa7Q7xy2S/45h+BUogqAQoBrDTpBkTFNkMk=' 'sha256-thpfFgw1VMy7GcMXqpWVABUalukoNCn0g0kQTelDqEA=' 'sha256-+uC+2tyReBuCeox8zV0E1QLvYAH+UkWvyqz5Rr+sdNk=' 'sha256-MB52pf5SCKlStcm4MEYmNRveQ9ufaTgAlPJhg7kix1Q=' ; object-src 'self'"
 }
