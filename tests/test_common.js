@@ -3,7 +3,7 @@ var assert = require('assert');
 var chai = require('chai');
 var expect = chai.expect;
 
-var tld = require('lib/tld.min.js');
+var tld = require('lib/tld.js');
 
 var generateGuid = require('common.js').generateGuid;
 var bump = require('common.js').bump;

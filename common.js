@@ -38,7 +38,7 @@ var debug = false;
 // XXX: Inject npm packages when running tests
 if (typeof require !== 'undefined') {
     if (typeof tld === 'undefined') {
-        var tld = require('lib/tld.min.js');
+        var tld = require('lib/tld.js');
     }
     if (typeof crypto === 'undefined') {
         var crypto = new Object();
@@ -47,6 +47,9 @@ if (typeof require !== 'undefined') {
     if (typeof PassHashCommon === 'undefined') {
         PassHashCommon = require('lib/passhashcommon.js').PassHashCommon;
     }
+} else {
+    // tldjs 2.3.1 exports itself as window.tldjs
+    window.tld = window.tldjs
 }
 
 String.prototype.startsWith = function (str) {
@@ -226,9 +229,12 @@ function grepUrl (url) {
         } else {
             //this shouldn't throw an error.
             //but just in case it does, handle it at (d)
+            console.log("grepUrl: address=" + address);
+            console.log("grepUrl: getDomain=" + tld.getDomain(address));
             return split_at_first_dot.exec(tld.getDomain(address))[1]; // c
         }
     } catch (e) {
+        console.log(e)
         return "chrome";                                               // d
     }
 }
