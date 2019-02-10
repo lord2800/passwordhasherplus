@@ -57,10 +57,8 @@ function getStyles(field, styles) {
 function createMaskButton(field) {
     if (debug) console.log("creating mask button for field " + field.id);
     /* create unmask button */
-    var content = '<span class="passhashbutton maskbutton"/>';
     var maskbutton = document.createElement('div');
     maskbutton.classList.add('passhashbutton');
-    maskbutton.innerHTML = content;
     /* position at the bottom right corner of password field */
     var fs = getStyles(field, [ 'display', 'width', 'height',
             'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
