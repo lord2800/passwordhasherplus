@@ -90,6 +90,10 @@ Storage.prototype.loadOptions = function () {
 		options.compatibilityMode = false;
 		dirty = true;
 	}
+	if (null == options.showMaskButton) {
+		options.showMaskButton = true;
+		dirty = true;
+	}
 	if (null == options.hashKey) {
 		options.hashKey = default_hashkey;
 		dirty = true;

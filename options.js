@@ -39,6 +39,7 @@ function saveOptions () {
 	} else {
 		delete options.custom;
 	}
+	options.showMaskButton = document.getElementById ("maskbutton").checked;
 	options.compatibilityMode = document.getElementById ("compatibility").checked;
 	options.privateSeed = document.getElementById ("seed").value;
 	options.backedUp = document.getElementById ("backedup").checked;
@@ -53,6 +54,7 @@ function restoreOptions () {
         document.getElementById ("length").value = options.defaultLength;
         document.getElementById ("strength").value = options.defaultStrength;
         document.getElementById ("compatibility").checked = options.compatibilityMode;
+        document.getElementById ("maskbutton").checked = options.showMaskButton;
         document.getElementById ("seed").value = options.privateSeed;
         document.getElementById ("backedup").checked = options.backedUp;
         document.getElementById ("hashkey").value = options.hashKey;
