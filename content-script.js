@@ -55,33 +55,25 @@ function getStyles(field, styles) {
     return results;
 }
 
-function createMaskButton(field) {
+function createMaskButton(field, innerHTML) {
     if (debug) console.log("creating mask button for field " + field.id);
     /* create unmask button */
     var maskbutton = document.createElement('div');
     maskbutton.classList.add('passhashplusbutton');
+    maskbutton.innerHTML = innerHTML;
     /* position at the bottom right corner of password field */
-    var fs = getStyles(field, [ 'display', 'width', 'height',
-            'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
-            'margin-top', 'margin-bottom', 'margin-left',
-            'border-bottom-right-radius', 'border-top-width',
-            'border-bottom-width', 'border-left-width', 'border-right-width']);
+    var fs = getStyles(field, [ 'display' ]);
     if (fs.display == 'none') {
         // shortcircuit when field is display:none
         return maskbutton;
     }
     field.parentNode.insertBefore(maskbutton, field);
-    // We get the field dimensions from the field's computed styles
-    var margintop = fs.height + fs['border-top-width'] +
-        fs['border-bottom-width'] + fs['padding-top'] + fs['padding-bottom'] +
-        fs['margin-top'];
-    maskbutton.style['margin-top'] = `${margintop}px`;
-    if (debug) console.log("maskbutton.margin-top: " + maskbutton.style['margin-top']);
-    var marginleft = fs.width - fs['border-bottom-right-radius'] - 30 +
-        fs['border-left-width'] + fs['padding-left'] + fs['margin-left'] +
-        fs['padding-right'];
-    maskbutton.style['margin-left'] = `${marginleft}px`;
-    if (debug) console.log("maskbutton.margin-left: " + maskbutton.style['margin-left']);
+    var top = Math.max(field.clientHeight - maskbutton.clientHeight, 0) - 5;
+    var left = Math.max(field.clientWidth - maskbutton.clientWidth, 0) - 5;
+    if (debug) console.log('maskbutton.top = ' + top + 'px, maskbutton.left = ' + left + 'px');
+    maskbutton.style['top'] = `${top}px`;
+    maskbutton.style['left'] = `${left}px`;
+    maskbutton.style['z-index'] = '999999999';
     return maskbutton;
 }
 
@@ -102,7 +94,7 @@ function bind (f) {
     var maskbutton = null;
     if (showMaskButton) {
         // Only create button when `showMaskButton` is true
-        maskbutton = createMaskButton(field);
+        maskbutton = createMaskButton(field, field.type === 'password' ? 'a' : '*');
     }
 
     /* toggle masking... maybe remove here? */
@@ -157,7 +149,7 @@ function onMutation (mutations, observer) {
             if (item.nodeName == 'INPUT' && item.type == 'password') {
                 bind(item);
             } else {
-                initAllFields();
+                requestAnimationFrame(initAllFields);
             }
         }
     });
@@ -172,7 +164,7 @@ browser.storage.local.get('sync').then(results => {
         showMaskButton = optres.options.showMaskButton;
         if (debug) console.log("Got settings: maskKey="+maskKey+", showMaskButton="+showMaskButton);
         // run on initial page content after we've gotten settings
-        initAllFields();
+        requestAnimationFrame(initAllFields);
         // only start observing document for changes when we've gotten
         // settings from storage
         observer.observe (document, { childList: true, subtree: true });
@@ -185,7 +177,7 @@ browser.storage.onChanged.addListener(function (changes, areaName) {
         if (showMaskButton !== changes.options.newValue.showMaskButton) {
             showMaskButton = changes.options.newValue.showMaskButton;
             if (debug) console.log("[passwordhasherplus] showMaskButton changed: " + showMaskButton);
-            initAllFields();
+            requestAnimationFrame(initAllFields);
         }
         if (maskKey !== changes.options.oldValue.maskKey) {
             if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
