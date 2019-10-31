@@ -32,7 +32,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-var debug = false;
+var debug = true;
 var maskKey;
 var showMaskButton;
 
@@ -149,9 +149,6 @@ function initAllFields() {
     }
 }
 
-// run on initial page content
-initAllFields();
-
 // Make sure we react to dynamically appearing elements
 function onMutation (mutations, observer) {
     mutations.forEach (function(mutation) {
@@ -166,7 +163,6 @@ function onMutation (mutations, observer) {
     });
 }
 var observer = new MutationObserver (onMutation);
-observer.observe (document, { childList: true, subtree: true });
 
 // Grab options from storage
 browser.storage.local.get('sync').then(results => {
@@ -174,6 +170,12 @@ browser.storage.local.get('sync').then(results => {
     area.get('options').then(optres => {
         maskKey = optres.options.maskKey;
         showMaskButton = optres.options.showMaskButton;
+        if (debug) console.log("Got settings: maskKey="+maskKey+", showMaskButton="+showMaskButton);
+        // run on initial page content after we've gotten settings
+        initAllFields();
+        // only start observing document for changes when we've gotten
+        // settings from storage
+        observer.observe (document, { childList: true, subtree: true });
     });
 });
 // Register for storage changes to update maskkey when necessary
@@ -182,8 +184,11 @@ browser.storage.onChanged.addListener(function (changes, areaName) {
         maskKey = changes.options.newValue.maskKey;
         if (showMaskButton !== changes.options.newValue.showMaskButton) {
             showMaskButton = changes.options.newValue.showMaskButton;
+            if (debug) console.log("[passwordhasherplus] showMaskButton changed: " + showMaskButton);
             initAllFields();
         }
-        if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
+        if (maskKey !== changes.options.oldValue.maskKey) {
+            if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
+        }
     }
 });
