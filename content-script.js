@@ -68,12 +68,12 @@ function createMaskButton(field, innerHTML) {
         return maskbutton;
     }
     field.parentNode.insertBefore(maskbutton, field);
-    var top = Math.max(field.clientHeight - maskbutton.clientHeight, 0) - 5;
-    var left = Math.max(field.clientWidth - maskbutton.clientWidth, 0) - 5;
+    var fieldRect = field.getBoundingClientRect();
+    var top = Math.max(fieldRect.height + maskbutton.clientHeight, 0) + 5;
+    var left = Math.max(fieldRect.width - maskbutton.clientWidth, 0) - 5;
     if (debug) console.log('maskbutton.top = ' + top + 'px, maskbutton.left = ' + left + 'px');
     maskbutton.style['top'] = `${top}px`;
     maskbutton.style['left'] = `${left}px`;
-    maskbutton.style['z-index'] = '999999999';
     return maskbutton;
 }
 
