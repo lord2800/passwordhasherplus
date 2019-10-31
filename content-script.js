@@ -34,6 +34,7 @@
  * ***** END LICENSE BLOCK ***** */
 var debug = false;
 var maskKey;
+var showMaskButton;
 
 var id = 0;
 
@@ -91,7 +92,7 @@ function bind (f) {
         field.id = "passhash_" + id++;
     }
 
-    if (-1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
+    if (!showMaskButton || -1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
         return false;
     }
     fields[fields.length] = field;
@@ -166,12 +167,17 @@ browser.storage.local.get('sync').then(results => {
     var area = results.sync ? browser.storage.sync : browser.storage.local;
     area.get('options').then(optres => {
         maskKey = optres.options.maskKey;
+        showMaskButton = optres.options.showMaskButton;
     });
 });
 // Register for storage changes to update maskkey when necessary
 browser.storage.onChanged.addListener(function (changes, areaName) {
     if ('options' in changes) {
         maskKey = changes.options.newValue.maskKey;
+        if (showMaskButton !== changes.options.newValue.showMaskButton) {
+            showMaskButton = changes.options.newValue.showMaskButton;
+            initAllFields();
+        }
         if (debug) console.log("[passwordhasherplus] mask key changed from " + changes.options.oldValue.maskKey + " to " + maskKey);
     }
 });
