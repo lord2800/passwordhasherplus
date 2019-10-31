@@ -1,4 +1,6 @@
-# Unreleased
+# 2.5.1
+
+Release 2.5.1 includes various small improvements.
 
 ## Added
 
@@ -6,7 +8,7 @@
 
 ## Changed
 
-* Simplified mask button placement (#25)
+* Simplified mask button placement (#25, #28)
 
 ## Fixed
 
