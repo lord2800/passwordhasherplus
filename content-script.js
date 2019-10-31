@@ -92,14 +92,18 @@ function bind (f) {
         field.id = "passhash_" + id++;
     }
 
-    if (!showMaskButton || -1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
+    if (-1 != fields.indexOf(field) || field.classList.contains("nopasshash")) {
         return false;
     }
     fields[fields.length] = field;
 
     var masking = true;
 
-    var maskbutton = createMaskButton(field);
+    var maskbutton = null;
+    if (showMaskButton) {
+        // Only create button when `showMaskButton` is true
+        maskbutton = createMaskButton(field);
+    }
 
     /* toggle masking... maybe remove here? */
     function setFieldType () {
@@ -123,7 +127,9 @@ function bind (f) {
     }
 
     /* make button do something */
-    maskbutton.addEventListener('click', toggleMasking);
+    if (maskbutton != null) {
+        maskbutton.addEventListener('click', toggleMasking);
+    }
     /* bind shortcut also */
     field.addEventListener('keydown', function (e) {
         var shortcut = (e.ctrlKey ? "Ctrl+" : "") + (e.shiftKey ? "Shift+" : "") + e.which;
