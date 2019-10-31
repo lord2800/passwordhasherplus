@@ -33,7 +33,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-.passhashbutton {
+.passhashplusbutton {
   background:#ffffd4;
   border:1px solid #ffff30;
   color:#333;
@@ -46,7 +46,4 @@
   position:absolute;
   display:inline-block;
   font-size:11px;
-}
-.hidden {
-  display:none;
 }
