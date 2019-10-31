@@ -1,3 +1,18 @@
+# Unreleased
+
+## Added
+
+* Option to hide the mask button (#23)
+
+## Changed
+
+* Simplified mask button placement (#25)
+
+## Fixed
+
+* Remove unused CSS class `.hidden` (#26)
+* Only start content-script code after options are loaded from storage
+
 # 2.5.0
 
 ## Changed
